@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livre d'Or - Sara & Othmane</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Montserrat:wght@300;400;500;600&display=swap');
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .font-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Système de stockage simple utilisant localStorage
+        const storage = {
+            get: (key) => {
+                try {
+                    const value = localStorage.getItem(key);
+                    return value ? JSON.parse(value) : null;
+                } catch (error) {
+                    console.error('Error reading from storage:', error);
+                    return null;
+                }
+            },
+            set: (key, value) => {
+                try {
+                    localStorage.setItem(key, JSON.stringify(value));
+                    return true;
+                } catch (error) {
+                    console.error('Error writing to storage:', error);
+                    return false;
+                }
+            }
+        };
+
+        // Icônes SVG
+        const Heart = ({ size = 24, fill = false, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill={fill ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+        );
+
+        const MessageSquare = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+        );
+
+        const Mic = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+        );
+
+        const Camera = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+        );
+
+        const Video = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+            </svg>
+        );
+
+        const Download = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+        );
+
+        const X = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        );
+
+        const Play = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+        );
+
+        const Pause = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <rect x="6" y="4" width="4" height="16"></rect>
+                <rect x="14" y="4" width="4" height="16"></rect>
+            </svg>
+        );
+
+        const Check = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        );
+
+        const QrCode = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+            </svg>
+        );
+
+        const WeddingGuestbook = () => {
+            const [messages, setMessages] = useState([]);
+            const [showForm, setShowForm] = useState(false);
+            const [messageType, setMessageType] = useState(null);
+            const [textMessage, setTextMessage] = useState('');
+            const [guestName, setGuestName] = useState('');
+            const [isRecording, setIsRecording] = useState(false);
+            const [recordingTime, setRecordingTime] = useState(0);
+            const [mediaRecorder, setMediaRecorder] = useState(null);
+            const [showQR, setShowQR] = useState(false);
+            const [loading, setLoading] = useState(true);
+            const [showCamera, setShowCamera] = useState(false);
+            const [capturedMedia, setCapturedMedia] = useState(null);
+            const [currentStream, setCurrentStream] = useState(null);
+            const videoPreviewRef = useRef(null);
+            const timerRef = useRef(null);
+
+            useEffect(() => {
+                loadMessages();
+            }, []);
+
+            useEffect(() => {
+                if (isRecording) {
+                    timerRef.current = setInterval(() => {
+                        setRecordingTime(prev => {
+                            if (prev >= 60) {
+                                stopRecording();
+                                return 60;
+                            }
+                            return prev + 1;
+                        });
+                    }, 1000);
+                } else {
+                    if (timerRef.current) {
+                        clearInterval(timerRef.current);
+                    }
+                    setRecordingTime(0);
+                }
+                return () => {
+                    if (timerRef.current) {
+                        clearInterval(timerRef.current);
+                    }
+                };
+            }, [isRecording]);
+
+            useEffect(() => {
+                return () => {
+                    if (currentStream) {
+                        currentStream.getTracks().forEach(track => track.stop());
+                    }
+                };
+            }, [currentStream]);
+
+            const loadMessages = () => {
+                const stored = storage.get('wedding-messages');
+                if (stored) {
+                    setMessages(stored);
+                }
+                setLoading(false);
+            };
+
+            const saveMessages = (newMessages) => {
+                storage.set('wedding-messages', newMessages);
+                setMessages(newMessages);
+            };
+
+            const startCamera = async (type) => {
+                try {
+                    const constraints = {
+                        audio: type === 'video' || type === 'audio',
+                        video: type === 'video' || type === 'photo' ? {
+                            facingMode: 'user',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        } : false
+                    };
+
+                    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    setCurrentStream(stream);
+
+                    if (videoPreviewRef.current && (type === 'video' || type === 'photo')) {
+                        videoPreviewRef.current.srcObject = stream;
+                    }
+
+                    setShowCamera(true);
+
+                    if (type === 'video' || type === 'audio') {
+                        startRecordingWithStream(stream, type);
+                    }
+                } catch (error) {
+                    console.error('Erreur caméra:', error);
+                    alert('Impossible d\'accéder à la caméra/micro. Vérifiez les permissions dans les paramètres de votre navigateur.');
+                }
+            };
+
+            const startRecordingWithStream = (stream, type) => {
+                try {
+                    const recorder = new MediaRecorder(stream);
+                    const chunks = [];
+
+                    recorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) {
+                            chunks.push(e.data);
+                        }
+                    };
+
+                    recorder.onstop = () => {
+                        const blob = new Blob(chunks, { type: type === 'video' ? 'video/webm' : 'audio/webm' });
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            setCapturedMedia(reader.result);
+                            stopCamera();
+                        };
+                        reader.readAsDataURL(blob);
+                    };
+
+                    recorder.start();
+                    setMediaRecorder(recorder);
+                    setIsRecording(true);
+                } catch (error) {
+                    console.error('Erreur enregistrement:', error);
+                    alert('Erreur lors du démarrage de l\'enregistrement');
+                }
+            };
+
+            const stopRecording = () => {
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                    setIsRecording(false);
+                }
+            };
+
+            const capturePhoto = () => {
+                if (videoPreviewRef.current) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = videoPreviewRef.current.videoWidth;
+                    canvas.height = videoPreviewRef.current.videoHeight;
+                    canvas.getContext('2d').drawImage(videoPreviewRef.current, 0, 0);
+                    const photoData = canvas.toDataURL('image/jpeg', 0.9);
+                    setCapturedMedia(photoData);
+                    stopCamera();
+                }
+            };
+
+            const stopCamera = () => {
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                    setCurrentStream(null);
+                }
+                if (videoPreviewRef.current) {
+                    videoPreviewRef.current.srcObject = null;
+                }
+                setShowCamera(false);
+            };
+
+            const submitMessage = () => {
+                if (!guestName.trim()) {
+                    alert('Veuillez entrer votre nom');
+                    return;
+                }
+
+                let content = '';
+                if (messageType === 'text') {
+                    if (!textMessage.trim()) {
+                        alert('Veuillez écrire un message');
+                        return;
+                    }
+                    content = textMessage;
+                } else {
+                    if (!capturedMedia) {
+                        alert('Veuillez capturer votre média');
+                        return;
+                    }
+                    content = capturedMedia;
+                }
+
+                const newMessage = {
+                    id: Date.now(),
+                    type: messageType,
+                    content: content,
+                    name: guestName,
+                    timestamp: new Date().toISOString()
+                };
+
+                const updatedMessages = [...messages, newMessage];
+                saveMessages(updatedMessages);
+                
+                resetForm();
+                alert('✅ Merci ! Votre message a été enregistré avec succès !');
+            };
+
+            const resetForm = () => {
+                setShowForm(false);
+                setMessageType(null);
+                setTextMessage('');
+                setGuestName('');
+                setIsRecording(false);
+                setRecordingTime(0);
+                setCapturedMedia(null);
+                setShowCamera(false);
+                stopCamera();
+            };
+
+            const downloadAllMessages = () => {
+                const dataStr = JSON.stringify(messages, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `livre-or-sara-othmane-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+            };
+
+            const formatTime = (seconds) => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            };
+
+            const MessageCard = ({ msg }) => {
+                const [isPlaying, setIsPlaying] = useState(false);
+                const audioRef = useRef(null);
+
+                const togglePlay = () => {
+                    if (audioRef.current) {
+                        if (isPlaying) {
+                            audioRef.current.pause();
+                        } else {
+                            audioRef.current.play();
+                        }
+                        setIsPlaying(!isPlaying);
+                    }
+                };
+
+                return (
+                    <div className="bg-white rounded-lg shadow-md p-4 mb-4" style={{borderLeft: '4px solid #fbbf24'}}>
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="font-semibold text-gray-800">{msg.name}</span>
+                            <span className="text-xs text-gray-500">
+                                {new Date(msg.timestamp).toLocaleDateString('fr-FR', { 
+                                    day: 'numeric', 
+                                    month: 'short',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}
+                            </span>
+                        </div>
+                        
+                        {msg.type === 'text' && (
+                            <p className="text-gray-700" style={{whiteSpace: 'pre-wrap'}}>{msg.content}</p>
+                        )}
+                        
+                        {msg.type === 'audio' && (
+                            <div className="flex items-center gap-3">
+                                <button 
+                                    onClick={togglePlay}
+                                    className="text-white p-3 rounded-full"
+                                    style={{background: '#f59e0b'}}
+                                >
+                                    {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+                                </button>
+                                <audio 
+                                    ref={audioRef} 
+                                    src={msg.content}
+                                    onEnded={() => setIsPlaying(false)}
+                                />
+                                <span className="text-sm text-gray-600">Message vocal</span>
+                            </div>
+                        )}
+                        
+                        {msg.type === 'photo' && (
+                            <img src={msg.content} alt="Photo" className="rounded-lg max-w-full h-auto" />
+                        )}
+                        
+                        {msg.type === 'video' && (
+                            <video src={msg.content} controls className="rounded-lg max-w-full h-auto" />
+                        )}
+                    </div>
+                );
+            };
+
+            if (loading) {
+                return (
+                    <div className="min-h-screen flex items-center justify-center" style={{background: 'linear-gradient(to bottom right, #fef3f2, #fce7f3, #fef3c7)'}}>
+                        <div className="text-2xl" style={{color: '#d97706'}}>Chargement...</div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen py-4 px-4" style={{background: 'linear-gradient(to bottom right, #fef3f2, #fce7f3, #fef3c7)'}}>
+                    <div className="max-w-2xl mx-auto">
+                        {/* Header */}
+                        <div className="text-center mb-6">
+                            <div className="flex items-center justify-center gap-3 mb-3">
+                                <Heart size={28} fill={true} className="text-rose-500" />
+                                <h1 className="text-4xl md:text-5xl font-serif" style={{
+                                    background: 'linear-gradient(to right, #fbbf24, #f59e0b, #fbbf24)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    backgroundClip: 'text'
+                                }}>
+                                    Sara & Othmane
+                                </h1>
+                                <Heart size={28} fill={true} className="text-rose-500" />
+                            </div>
+                            <p className="text-gray-600 text-lg mb-3">Livre d'Or Numérique</p>
+                            <div className="flex gap-3 justify-center">
+                                <button
+                                    onClick={() => setShowQR(!showQR)}
+                                    className="text-sm flex items-center gap-2"
+                                    style={{color: '#d97706'}}
+                                >
+                                    <QrCode size={18} />
+                                    {showQR ? 'Masquer' : 'Afficher'} le QR Code
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const link = document.createElement('a');
+                                        link.href = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(window.location.href)}&margin=20`;
+                                        link.download = 'QR-Code-Sara-Othmane.png';
+                                        link.click();
+                                    }}
+                                    className="text-sm flex items-center gap-2"
+                                    style={{color: '#059669'}}
+                                >
+                                    <Download size={18} />
+                                    Télécharger QR Code
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* QR Code Section */}
+                        {showQR && (
+                            <div className="bg-white rounded-lg shadow-lg p-6 mb-6 text-center">
+                                <h2 className="text-lg font-semibold mb-4 text-gray-800">
+                                    Scannez pour participer
+                                </h2>
+                                <div className="inline-block bg-white p-4 rounded-lg" style={{border: '2px solid #fde68a'}}>
+                                    <img 
+                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`}
+                                        alt="QR Code"
+                                        className="mx-auto"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        {!showForm && (
+                            <div className="grid grid-cols-2 gap-3 mb-6">
+                                <button
+                                    onClick={() => { setShowForm(true); setMessageType('text'); }}
+                                    className="bg-white rounded-xl p-6 shadow-lg transition-all transform hover:scale-105 active:scale-95"
+                                    style={{background: 'linear-gradient(to bottom, white, #fef3c7)'}}
+                                >
+                                    <MessageSquare size={32} className="mx-auto mb-2" style={{color: '#f59e0b'}} />
+                                    <span className="text-gray-700 font-medium block">Message</span>
+                                    <span className="text-xs text-gray-500">Écrit</span>
+                                </button>
+                                
+                                <button
+                                    onClick={() => { setShowForm(true); setMessageType('audio'); }}
+                                    className="bg-white rounded-xl p-6 shadow-lg transition-all transform hover:scale-105 active:scale-95"
+                                    style={{background: 'linear-gradient(to bottom, white, #fef3c7)'}}
+                                >
+                                    <Mic size={32} className="mx-auto mb-2" style={{color: '#f43f5e'}} />
+                                    <span className="text-gray-700 font-medium block">Message</span>
+                                    <span className="text-xs text-gray-500">Vocal</span>
+                                </button>
+                                
+                                <button
+                                    onClick={() => { setShowForm(true); setMessageType('photo'); }}
+                                    className="bg-white rounded-xl p-6 shadow-lg transition-all transform hover:scale-105 active:scale-95"
+                                    style={{background: 'linear-gradient(to bottom, white, #fef3c7)'}}
+                                >
+                                    <Camera size={32} className="mx-auto mb-2" style={{color: '#ec4899'}} />
+                                    <span className="text-gray-700 font-medium block">Photo</span>
+                                    <span className="text-xs text-gray-500">Selfie</span>
+                                </button>
+                                
+                                <button
+                                    onClick={() => { setShowForm(true); setMessageType('video'); }}
+                                    className="bg-white rounded-xl p-6 shadow-lg transition-all transform hover:scale-105 active:scale-95"
+                                    style={{background: 'linear-gradient(to bottom, white, #fef3c7)'}}
+                                >
+                                    <Video size={32} className="mx-auto mb-2" style={{color: '#a855f7'}} />
+                                    <span className="text-gray-700 font-medium block">Vidéo</span>
+                                    <span className="text-xs text-gray-500">1 min max</span>
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Form */}
+                        {showForm && (
+                            <div className="bg-white rounded-xl shadow-2xl p-5 mb-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-semibold text-gray-800">
+                                        {messageType === 'text' && '✍️ Votre message'}
+                                        {messageType === 'audio' && '🎤 Message vocal'}
+                                        {messageType === 'photo' && '📸 Prendre une photo'}
+                                        {messageType === 'video' && '🎥 Enregistrer une vidéo'}
+                                    </h3>
+                                    <button onClick={resetForm} className="text-gray-500 p-2">
+                                        <X size={24} />
+                                    </button>
+                                </div>
+
+                                <input
+                                    type="text"
+                                    placeholder="Votre prénom"
+                                    value={guestName}
+                                    onChange={(e) => setGuestName(e.target.value)}
+                                    className="w-full p-3 border-2 rounded-lg mb-4 text-lg"
+                                    style={{borderColor: '#e5e7eb'}}
+                                />
+
+                                {messageType === 'text' && (
+                                    <>
+                                        <textarea
+                                            placeholder="Écrivez votre message aux mariés... 💕"
+                                            value={textMessage}
+                                            onChange={(e) => setTextMessage(e.target.value)}
+                                            className="w-full p-3 border-2 rounded-lg mb-4 h-32 text-base"
+                                            style={{borderColor: '#e5e7eb'}}
+                                        />
+                                        <button
+                                            onClick={submitMessage}
+                                            className="w-full text-white py-4 rounded-xl font-semibold text-lg shadow-lg active:scale-95"
+                                            style={{background: 'linear-gradient(to right, #fbbf24, #f59e0b)'}}
+                                        >
+                                            <Check size={20} className="inline mr-2" />
+                                            Envoyer le message
+                                        </button>
+                                    </>
+                                )}
+
+                                {messageType === 'audio' && (
+                                    <div className="text-center">
+                                        {!showCamera && !capturedMedia && (
+                                            <button
+                                                onClick={() => startCamera('audio')}
+                                                className="text-white px-8 py-4 rounded-xl font-semibold shadow-lg active:scale-95"
+                                                style={{background: 'linear-gradient(to right, #fb7185, #f43f5e)'}}
+                                            >
+                                                <Mic size={24} className="inline mr-2" />
+                                                Commencer l'enregistrement
+                                            </button>
+                                        )}
+                                        
+                                        {isRecording && (
+                                            <div className="py-6">
+                                                <div className="text-6xl mb-4">🎙️</div>
+                                                <div className="text-3xl font-bold mb-4" style={{color: '#f43f5e'}}>
+                                                    {formatTime(recordingTime)} / 1:00
+                                                </div>
+                                                <button
+                                                    onClick={stopRecording}
+                                                    className="bg-red-500 text-white px-8 py-4 rounded-xl font-semibold shadow-lg active:scale-95"
+                                                >
+                                                    ⏹️ Arrêter
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {capturedMedia && (
+                                            <div>
+                                                <audio src={capturedMedia} controls className="w-full mb-4" />
+                                                <button
+                                                    onClick={submitMessage}
+                                                    className="w-full text-white py-4 rounded-xl font-semibold shadow-lg active:scale-95"
+                                                    style={{background: 'linear-gradient(to right, #10b981, #059669)'}}
+                                                >
+                                                    <Check size={20} className="inline mr-2" />
+                                                    Valider et envoyer
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {messageType === 'photo' && (
+                                    <div className="text-center">
+                                        {!showCamera && !capturedMedia && (
+                                            <button
+                                                onClick={() => startCamera('photo')}
+                                                className="w-full text-white py-4 rounded-xl font-semibold shadow-lg active:scale-95"
+                                                style={{background: 'linear-gradient(to right, #f472b6, #ec4899)'}}
+                                            >
+                                                <Camera size={24} className="inline mr-2" />
+                                                Ouvrir la caméra
+                                            </button>
+                                        )}
+
+                                        {showCamera && (
+                                            <div>
+                                                <video
+                                                    ref={videoPreviewRef}
+                                                    autoPlay
+                                                    playsInline
+                                                    muted
+                                                    className="w-full rounded-lg mb-4"
+                                                />
+                                                <button
+                                                    onClick={capturePhoto}
+                                                    className="w-full text-white py-4 rounded-xl font-semibold shadow-lg active:scale-95"
+                                                    style={{background: 'linear-gradient(to right, #f472b6, #ec4899)'}}
+                                                >
+                                                    📸 Prendre la photo
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {capturedMedia && (
+                                            <div>
+                                                <img src={capturedMedia} alt="Preview" className="w-full rounded-lg mb-4" />
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => setCapturedMedia(null)}
+                                                        className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold"
+                                                    >
+                                                        Reprendre
+                                                    </button>
+                                                    <button
+                                                        onClick={submitMessage}
+                                                        className="flex-1 text-white py-3 rounded-xl font-semibold shadow-lg"
+                                                        style={{background: 'linear-gradient(to right, #10b981, #059669)'}}
+                                                    >
+                                                        <Check size={20} className="inline mr-2" />
+                                                        Valider
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {messageType === 'video' && (
+                                    <div className="text-center">
+                                        {!showCamera && !capturedMedia && (
+                                            <button
+                                                onClick={() => startCamera('video')}
+                                                className="text-white px-8 py-4 rounded-xl font-semibold shadow-lg active:scale-95"
+                                                style={{background: 'linear-gradient(to right, #c084fc, #a855f7)'}}
+                                            >
+                                                <Video size={24} className="inline mr-2" />
+                                                Commencer l'enregistrement
+                                            </button>
+                                        )}
+                                        
+                                        {showCamera && isRecording && (
+                                            <div>
+                                                <video
+                                                    ref={videoPreviewRef}
+                                                    autoPlay
+                                                    playsInline
+                                                    muted
+                                                    className="w-full rounded-lg mb-4"
+                                                />
+                                                <div className="text-3xl font-bold mb-4" style={{color: '#a855f7'}}>
+                                                    {formatTime(recordingTime)} / 1:00
+                                                </div>
+                                                <button
+                                                    onClick={stopRecording}
+                                                    className="bg-red-500 text-white px-8 py-4 rounded-xl font-semibold shadow-lg active:scale-95"
+                                                >
+                                                    ⏹️ Arrêter
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {capturedMedia && (
+                                            <div>
+                                                <video src={capturedMedia} controls className="w-full rounded-lg mb-4" />
+                                                <button
+                                                    onClick={submitMessage}
+                                                    className="w-full text-white py-4 rounded-xl font-semibold shadow-lg active:scale-95"
+                                                    style={{background: 'linear-gradient(to right, #10b981, #059669)'}}
+                                                >
+                                                    <Check size={20} className="inline mr-2" />
+                                                    Valider et envoyer
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Download Button - Admin */}
+                        {messages.length > 0 && !showForm && (
+                            <button
+                                onClick={downloadAllMessages}
+                                className="w-full text-white py-4 rounded-xl font-semibold mb-6 flex items-center justify-center gap-2 shadow-lg active:scale-95"
+                                style={{background: 'linear-gradient(to right, #10b981, #059669)'}}
+                            >
+                                <Download size={20} />
+                                Télécharger tous les messages ({messages.length})
+                            </button>
+                        )}
+
+                        {/* Messages List */}
+                        <div>
+                            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                                💌 Messages des invités ({messages.length})
+                            </h2>
+                            {messages.length === 0 ? (
+                                <div className="text-center py-12 text-gray-500 bg-white rounded-xl shadow-md">
+                                    <Heart size={48} className="mx-auto mb-3 text-rose-300" />
+                                    <p>Aucun message pour le moment</p>
+                                    <p className="text-sm">Soyez le premier à laisser un message ! 💕</p>
+                                </div>
+                            ) : (
+                                <div>
+                                    {messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(msg => (
+                                        <MessageCard key={msg.id} msg={msg} />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<WeddingGuestbook />, document.getElementById('root'));
+    </script>
+</body>
+</html>
