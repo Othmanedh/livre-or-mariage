@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Livre d'Or - Sara & Othmane</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Lato', sans-serif; background: linear-gradient(135deg, #FFFFFF 0%, #F5F0E8 40%, #EFE8DC 70%, #E8DCC8 100%); min-height: 100vh; }
@@ -105,12 +106,6 @@
         <div id="adminPanel" class="hidden">
             <h1 class="gold-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 2rem; font-family: 'Playfair Display', serif;">Admin - Sara & Othmane</h1>
             
-            <!-- Debug Info -->
-            <div id="debugInfo" class="card" style="background: #fff3cd; border: 2px solid #ffc107; margin-bottom: 1rem;">
-                <div style="font-weight: 600; margin-bottom: 0.5rem;">🔍 Debug Info</div>
-                <div id="debugText" style="font-size: 0.875rem; font-family: monospace;"></div>
-            </div>
-            
             <div class="card" style="text-align: center; margin-bottom: 2rem;">
                 <div class="gold-text" style="font-size: 3rem; font-weight: 700;" id="adminCount">0</div>
                 <div style="color: #8B7355; font-size: 1.125rem;">Messages reçus</div>
@@ -122,10 +117,14 @@
     </div>
 
     <script>
+        // Configuration Supabase
+        const SUPABASE_URL = 'https://yrmxaixutomupydmvjbo.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlybXhhaXh1dG9tdXB5ZG12amJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0NTM0NzksImV4cCI6MjA3OTAyOTQ3OX0.FSfNpYoluMjoTUYuiR8m1AGajfNJ9b5NEzEVGLT8zhE';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
         const CLOUDINARY_CLOUD_NAME = 'dukizthqt';
         const CLOUDINARY_UPLOAD_PRESET = 'wedding_guestbook';
         const ADMIN_PASSWORD = 'Sara18121703';
-        const STORAGE_KEY = 'wedding-messages-v3';
         
         let currentType = '';
         let mediaRecorder = null;
@@ -199,7 +198,7 @@
 
         async function startCamera() {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
                 document.getElementById('mediaContent').innerHTML = `
                     <video id="videoPreview" autoplay muted playsinline style="width: 100%; border-radius: 0.75rem; margin-bottom: 1rem;"></video>
                     <button onclick="capturePhoto()" class="btn btn-primary">📸 Prendre la photo</button>
@@ -316,8 +315,6 @@
             `;
             
             document.getElementById('mediaContent').innerHTML = html;
-            
-            // Stocker le blob temporairement
             window.currentBlob = blob;
         }
 
@@ -362,25 +359,32 @@
                 }
             }
             
-            const message = {
-                id: Date.now(),
-                type: currentType,
-                name,
-                content,
-                timestamp: new Date().toISOString()
-            };
+            document.getElementById('loadingText').textContent = 'Sauvegarde...';
             
-            const messages = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            messages.push(message);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-            
-            document.getElementById('loadingOverlay').classList.add('hidden');
-            hideForm();
-            
-            document.getElementById('successNotif').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('successNotif').classList.add('hidden');
-            }, 3000);
+            try {
+                const { data, error } = await supabase
+                    .from('messages')
+                    .insert([
+                        {
+                            type: currentType,
+                            name: name,
+                            content: content
+                        }
+                    ]);
+                
+                if (error) throw error;
+                
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                hideForm();
+                
+                document.getElementById('successNotif').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('successNotif').classList.add('hidden');
+                }, 3000);
+            } catch (error) {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                alert('Erreur de sauvegarde: ' + error.message);
+            }
         }
 
         function adminLogin() {
@@ -395,55 +399,63 @@
             }
         }
 
-        function loadAdminMessages() {
-            const messages = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            
-            // Afficher les infos de debug
-            const debugText = document.getElementById('debugText');
-            debugText.innerHTML = `
-                Clé de stockage: ${STORAGE_KEY}<br>
-                Nombre de messages: ${messages.length}<br>
-                localStorage disponible: ${localStorage ? 'OUI' : 'NON'}<br>
-                Données brutes: ${localStorage.getItem(STORAGE_KEY) ? 'PRÉSENTES' : 'VIDES'}
-            `;
-            
-            document.getElementById('adminCount').textContent = messages.length;
-            
-            const container = document.getElementById('adminMessages');
-            if (messages.length === 0) {
-                container.innerHTML = '<div class="card" style="text-align: center; padding: 3rem;"><p style="color: #8B7355; font-size: 1.125rem;">Aucun message pour le moment</p><p style="color: #A89379; margin-top: 1rem;">Les messages apparaîtront ici une fois envoyés par les invités</p><p style="color: #ef4444; margin-top: 1rem; font-size: 0.875rem;">Si vous venez d\'envoyer un message, actualisez cette page</p></div>';
-                return;
-            }
-            
-            const sortedMessages = [...messages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            
-            container.innerHTML = sortedMessages.map(msg => `
-                <div class="card message-card">
-                    <div style="font-weight: 600; font-size: 1.125rem; color: #8B7355; margin-bottom: 0.5rem;">${msg.name}</div>
-                    <div style="font-size: 0.875rem; color: #A89379; margin-bottom: 0.75rem;">${new Date(msg.timestamp).toLocaleString('fr-FR')}</div>
-                    <div class="badge">
-                        ${msg.type === 'text' ? '📝 Texte' : ''}
-                        ${msg.type === 'audio' ? '🎤 Audio' : ''}
-                        ${msg.type === 'photo' ? '📸 Photo' : ''}
-                        ${msg.type === 'video' ? '🎥 Vidéo' : ''}
+        async function loadAdminMessages() {
+            try {
+                const { data, error } = await supabase
+                    .from('messages')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                document.getElementById('adminCount').textContent = data.length;
+                
+                const container = document.getElementById('adminMessages');
+                if (data.length === 0) {
+                    container.innerHTML = '<div class="card" style="text-align: center; padding: 3rem;"><p style="color: #8B7355; font-size: 1.125rem;">Aucun message pour le moment</p><p style="color: #A89379; margin-top: 1rem;">Les messages apparaîtront ici une fois envoyés</p></div>';
+                    return;
+                }
+                
+                container.innerHTML = data.map(msg => `
+                    <div class="card message-card">
+                        <div style="font-weight: 600; font-size: 1.125rem; color: #8B7355; margin-bottom: 0.5rem;">${msg.name}</div>
+                        <div style="font-size: 0.875rem; color: #A89379; margin-bottom: 0.75rem;">${new Date(msg.created_at).toLocaleString('fr-FR')}</div>
+                        <div class="badge">
+                            ${msg.type === 'text' ? '📝 Texte' : ''}
+                            ${msg.type === 'audio' ? '🎤 Audio' : ''}
+                            ${msg.type === 'photo' ? '📸 Photo' : ''}
+                            ${msg.type === 'video' ? '🎥 Vidéo' : ''}
+                        </div>
+                        ${msg.type === 'text' ? `<p style="color: #6B5744; font-size: 1.125rem; line-height: 1.7; white-space: pre-wrap;">${msg.content}</p>` : ''}
+                        ${msg.type === 'audio' ? `<audio src="${msg.content}" controls style="width: 100%; margin-top: 0.5rem;"></audio>` : ''}
+                        ${msg.type === 'photo' ? `<img src="${msg.content}" style="width: 100%; border-radius: 0.75rem; margin-top: 0.5rem;">` : ''}
+                        ${msg.type === 'video' ? `<video src="${msg.content}" controls style="width: 100%; border-radius: 0.75rem; margin-top: 0.5rem;"></video>` : ''}
                     </div>
-                    ${msg.type === 'text' ? `<p style="color: #6B5744; font-size: 1.125rem; line-height: 1.7; white-space: pre-wrap;">${msg.content}</p>` : ''}
-                    ${msg.type === 'audio' ? `<audio src="${msg.content}" controls style="width: 100%; margin-top: 0.5rem;"></audio>` : ''}
-                    ${msg.type === 'photo' ? `<img src="${msg.content}" style="width: 100%; border-radius: 0.75rem; margin-top: 0.5rem;">` : ''}
-                    ${msg.type === 'video' ? `<video src="${msg.content}" controls style="width: 100%; border-radius: 0.75rem; margin-top: 0.5rem;"></video>` : ''}
-                </div>
-            `).join('');
+                `).join('');
+            } catch (error) {
+                alert('Erreur de chargement: ' + error.message);
+            }
         }
 
-        function downloadMessages() {
-            const messages = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            const data = JSON.stringify({ messages, total: messages.length }, null, 2);
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `livre-or-${Date.now()}.json`;
-            a.click();
+        async function downloadMessages() {
+            try {
+                const { data, error } = await supabase
+                    .from('messages')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                const exportData = JSON.stringify({ messages: data, total: data.length }, null, 2);
+                const blob = new Blob([exportData], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `livre-or-${Date.now()}.json`;
+                a.click();
+            } catch (error) {
+                alert('Erreur de téléchargement: ' + error.message);
+            }
         }
     </script>
 </body>
