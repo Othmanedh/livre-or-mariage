@@ -104,6 +104,13 @@
         <!-- Admin Panel -->
         <div id="adminPanel" class="hidden">
             <h1 class="gold-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 2rem; font-family: 'Playfair Display', serif;">Admin - Sara & Othmane</h1>
+            
+            <!-- Debug Info -->
+            <div id="debugInfo" class="card" style="background: #fff3cd; border: 2px solid #ffc107; margin-bottom: 1rem;">
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">🔍 Debug Info</div>
+                <div id="debugText" style="font-size: 0.875rem; font-family: monospace;"></div>
+            </div>
+            
             <div class="card" style="text-align: center; margin-bottom: 2rem;">
                 <div class="gold-text" style="font-size: 3rem; font-weight: 700;" id="adminCount">0</div>
                 <div style="color: #8B7355; font-size: 1.125rem;">Messages reçus</div>
@@ -220,9 +227,29 @@
             try {
                 const constraints = {
                     audio: true,
-                    video: currentType === 'video'
+                    video: currentType === 'video' ? { facingMode: 'user' } : false
                 };
                 stream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                let html = '';
+                if (currentType === 'video') {
+                    html = '<video id="videoPreview" autoplay muted playsinline style="width: 100%; border-radius: 0.75rem; margin-bottom: 1rem;"></video>';
+                } else {
+                    html = '<div style="font-size: 4rem; margin-bottom: 1rem;">🎙️</div>';
+                }
+                
+                html += `
+                    <div id="timer" style="font-size: 2rem; font-weight: 700; color: #D4AF37; margin-bottom: 1rem;">0:00 / 1:00</div>
+                    <button onclick="stopRecording()" class="btn" style="background: #ef4444; color: white;">⏹️ Arrêter</button>
+                `;
+                
+                document.getElementById('mediaContent').innerHTML = html;
+                
+                if (currentType === 'video') {
+                    const videoEl = document.getElementById('videoPreview');
+                    videoEl.srcObject = stream;
+                    await videoEl.play();
+                }
                 
                 mediaRecorder = new MediaRecorder(stream);
                 recordedChunks = [];
@@ -236,38 +263,28 @@
                         type: currentType === 'video' ? 'video/webm' : 'audio/webm' 
                     });
                     stream.getTracks().forEach(track => track.stop());
+                    stream = null;
                     showPreview(URL.createObjectURL(blob), blob);
                 };
                 
                 mediaRecorder.start();
                 recordingTime = 0;
                 
-                let html = '';
-                if (currentType === 'video') {
-                    html += '<video id="videoPreview" autoplay muted playsinline style="width: 100%; border-radius: 0.75rem; margin-bottom: 1rem;"></video>';
-                    document.getElementById('mediaContent').innerHTML = html;
-                    document.getElementById('videoPreview').srcObject = stream;
-                } else {
-                    document.getElementById('mediaContent').innerHTML = '<div style="font-size: 4rem; margin-bottom: 1rem;">🎙️</div>';
-                }
-                
-                document.getElementById('mediaContent').innerHTML += `
-                    <div id="timer" style="font-size: 2rem; font-weight: 700; color: #D4AF37; margin-bottom: 1rem;">0:00 / 1:00</div>
-                    <button onclick="stopRecording()" class="btn" style="background: #ef4444; color: white;">⏹️ Arrêter</button>
-                `;
-                
                 recordingInterval = setInterval(() => {
                     recordingTime++;
                     const mins = Math.floor(recordingTime / 60);
                     const secs = recordingTime % 60;
-                    document.getElementById('timer').textContent = `${mins}:${secs.toString().padStart(2, '0')} / 1:00`;
+                    const timerEl = document.getElementById('timer');
+                    if (timerEl) {
+                        timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')} / 1:00`;
+                    }
                     
                     if (recordingTime >= 60) {
                         stopRecording();
                     }
                 }, 1000);
             } catch (error) {
-                alert('Erreur: ' + error.message);
+                alert('Erreur caméra/micro: ' + error.message + '\n\nVérifiez les permissions dans votre navigateur.');
             }
         }
 
@@ -380,15 +397,27 @@
 
         function loadAdminMessages() {
             const messages = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            
+            // Afficher les infos de debug
+            const debugText = document.getElementById('debugText');
+            debugText.innerHTML = `
+                Clé de stockage: ${STORAGE_KEY}<br>
+                Nombre de messages: ${messages.length}<br>
+                localStorage disponible: ${localStorage ? 'OUI' : 'NON'}<br>
+                Données brutes: ${localStorage.getItem(STORAGE_KEY) ? 'PRÉSENTES' : 'VIDES'}
+            `;
+            
             document.getElementById('adminCount').textContent = messages.length;
             
             const container = document.getElementById('adminMessages');
             if (messages.length === 0) {
-                container.innerHTML = '<div class="card" style="text-align: center; padding: 3rem;"><p style="color: #8B7355; font-size: 1.125rem;">Aucun message</p></div>';
+                container.innerHTML = '<div class="card" style="text-align: center; padding: 3rem;"><p style="color: #8B7355; font-size: 1.125rem;">Aucun message pour le moment</p><p style="color: #A89379; margin-top: 1rem;">Les messages apparaîtront ici une fois envoyés par les invités</p><p style="color: #ef4444; margin-top: 1rem; font-size: 0.875rem;">Si vous venez d\'envoyer un message, actualisez cette page</p></div>';
                 return;
             }
             
-            container.innerHTML = messages.reverse().map(msg => `
+            const sortedMessages = [...messages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            container.innerHTML = sortedMessages.map(msg => `
                 <div class="card message-card">
                     <div style="font-weight: 600; font-size: 1.125rem; color: #8B7355; margin-bottom: 0.5rem;">${msg.name}</div>
                     <div style="font-size: 0.875rem; color: #A89379; margin-bottom: 0.75rem;">${new Date(msg.timestamp).toLocaleString('fr-FR')}</div>
@@ -399,9 +428,9 @@
                         ${msg.type === 'video' ? '🎥 Vidéo' : ''}
                     </div>
                     ${msg.type === 'text' ? `<p style="color: #6B5744; font-size: 1.125rem; line-height: 1.7; white-space: pre-wrap;">${msg.content}</p>` : ''}
-                    ${msg.type === 'audio' ? `<audio src="${msg.content}" controls style="width: 100%;"></audio>` : ''}
-                    ${msg.type === 'photo' ? `<img src="${msg.content}" style="width: 100%; border-radius: 0.75rem;">` : ''}
-                    ${msg.type === 'video' ? `<video src="${msg.content}" controls style="width: 100%; border-radius: 0.75rem;"></video>` : ''}
+                    ${msg.type === 'audio' ? `<audio src="${msg.content}" controls style="width: 100%; margin-top: 0.5rem;"></audio>` : ''}
+                    ${msg.type === 'photo' ? `<img src="${msg.content}" style="width: 100%; border-radius: 0.75rem; margin-top: 0.5rem;">` : ''}
+                    ${msg.type === 'video' ? `<video src="${msg.content}" controls style="width: 100%; border-radius: 0.75rem; margin-top: 0.5rem;"></video>` : ''}
                 </div>
             `).join('');
         }
