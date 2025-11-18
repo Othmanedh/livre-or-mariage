@@ -230,61 +230,79 @@
                 };
                 stream = await navigator.mediaDevices.getUserMedia(constraints);
                 
-                let html = '';
                 if (currentType === 'video') {
-                    html = '<video id="videoPreview" autoplay muted playsinline style="width: 100%; border-radius: 0.75rem; margin-bottom: 1rem;"></video>';
-                } else {
-                    html = '<div style="font-size: 4rem; margin-bottom: 1rem;">🎙️</div>';
-                }
-                
-                html += `
-                    <div id="timer" style="font-size: 2rem; font-weight: 700; color: #D4AF37; margin-bottom: 1rem;">0:00 / 1:00</div>
-                    <button onclick="stopRecording()" class="btn" style="background: #ef4444; color: white;">⏹️ Arrêter</button>
-                `;
-                
-                document.getElementById('mediaContent').innerHTML = html;
-                
-                if (currentType === 'video') {
+                    // Afficher d'abord la caméra avec un bouton pour démarrer
+                    document.getElementById('mediaContent').innerHTML = `
+                        <video id="videoPreview" autoplay muted playsinline style="width: 100%; border-radius: 0.75rem; margin-bottom: 1rem;"></video>
+                        <button onclick="startActualRecording()" class="btn btn-primary" style="width: 100%;">▶️ Lancer l'enregistrement</button>
+                    `;
                     const videoEl = document.getElementById('videoPreview');
                     videoEl.srcObject = stream;
                     await videoEl.play();
+                } else {
+                    // Pour l'audio, démarrer directement
+                    startActualRecording();
                 }
-                
-                mediaRecorder = new MediaRecorder(stream);
-                recordedChunks = [];
-                
-                mediaRecorder.ondataavailable = e => {
-                    if (e.data.size > 0) recordedChunks.push(e.data);
-                };
-                
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(recordedChunks, { 
-                        type: currentType === 'video' ? 'video/webm' : 'audio/webm' 
-                    });
-                    stream.getTracks().forEach(track => track.stop());
-                    stream = null;
-                    showPreview(URL.createObjectURL(blob), blob);
-                };
-                
-                mediaRecorder.start();
-                recordingTime = 0;
-                
-                recordingInterval = setInterval(() => {
-                    recordingTime++;
-                    const mins = Math.floor(recordingTime / 60);
-                    const secs = recordingTime % 60;
-                    const timerEl = document.getElementById('timer');
-                    if (timerEl) {
-                        timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')} / 1:00`;
-                    }
-                    
-                    if (recordingTime >= 60) {
-                        stopRecording();
-                    }
-                }, 1000);
             } catch (error) {
                 alert('Erreur caméra/micro: ' + error.message + '\n\nVérifiez les permissions dans votre navigateur.');
             }
+        }
+
+        function startActualRecording() {
+            if (!stream) return;
+            
+            let html = '';
+            if (currentType === 'video') {
+                html = '<video id="videoPreview" autoplay muted playsinline style="width: 100%; border-radius: 0.75rem; margin-bottom: 1rem;"></video>';
+            } else {
+                html = '<div style="font-size: 4rem; margin-bottom: 1rem;">🎙️</div>';
+            }
+            
+            html += `
+                <div id="timer" style="font-size: 2rem; font-weight: 700; color: #D4AF37; margin-bottom: 1rem;">0:00 / 1:00</div>
+                <button onclick="stopRecording()" class="btn" style="background: #ef4444; color: white;">⏹️ Arrêter l'enregistrement</button>
+            `;
+            
+            document.getElementById('mediaContent').innerHTML = html;
+            
+            if (currentType === 'video') {
+                const videoEl = document.getElementById('videoPreview');
+                videoEl.srcObject = stream;
+                videoEl.play();
+            }
+            
+            mediaRecorder = new MediaRecorder(stream);
+            recordedChunks = [];
+            
+            mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            };
+            
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { 
+                    type: currentType === 'video' ? 'video/webm' : 'audio/webm' 
+                });
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                showPreview(URL.createObjectURL(blob), blob);
+            };
+            
+            mediaRecorder.start();
+            recordingTime = 0;
+            
+            recordingInterval = setInterval(() => {
+                recordingTime++;
+                const mins = Math.floor(recordingTime / 60);
+                const secs = recordingTime % 60;
+                const timerEl = document.getElementById('timer');
+                if (timerEl) {
+                    timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')} / 1:00`;
+                }
+                
+                if (recordingTime >= 60) {
+                    stopRecording();
+                }
+            }, 1000);
         }
 
         function stopRecording() {
@@ -304,7 +322,7 @@
             } else if (currentType === 'photo') {
                 html = `<img src="${url}" style="width: 100%; border-radius: 0.75rem; margin-bottom: 1rem;">`;
             } else if (currentType === 'video') {
-                html = `<video src="${url}" controls style="width: 100%; border-radius: 0.75rem; margin-bottom: 1rem;"></video>`;
+                html = `<video src="${url}" controls preload="metadata" style="width: 100%; border-radius: 0.75rem; margin-bottom: 1rem;"></video>`;
             }
             
             html += `
@@ -418,8 +436,13 @@
                 
                 container.innerHTML = data.map(msg => `
                     <div class="card message-card">
-                        <div style="font-weight: 600; font-size: 1.125rem; color: #8B7355; margin-bottom: 0.5rem;">${msg.name}</div>
-                        <div style="font-size: 0.875rem; color: #A89379; margin-bottom: 0.75rem;">${new Date(msg.created_at).toLocaleString('fr-FR')}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 1.125rem; color: #8B7355; margin-bottom: 0.5rem;">${msg.name}</div>
+                                <div style="font-size: 0.875rem; color: #A89379; margin-bottom: 0.75rem;">${new Date(msg.created_at).toLocaleString('fr-FR')}</div>
+                            </div>
+                            <button onclick="deleteMessage(${msg.id})" class="btn" style="background: #ef4444; color: white; padding: 0.5rem 1rem; font-size: 0.875rem;">🗑️ Supprimer</button>
+                        </div>
                         <div class="badge">
                             ${msg.type === 'text' ? '📝 Texte' : ''}
                             ${msg.type === 'audio' ? '🎤 Audio' : ''}
@@ -427,9 +450,9 @@
                             ${msg.type === 'video' ? '🎥 Vidéo' : ''}
                         </div>
                         ${msg.type === 'text' ? `<p style="color: #6B5744; font-size: 1.125rem; line-height: 1.7; white-space: pre-wrap;">${msg.content}</p>` : ''}
-                        ${msg.type === 'audio' ? `<audio src="${msg.content}" controls style="width: 100%; margin-top: 0.5rem;"></audio>` : ''}
+                        ${msg.type === 'audio' ? `<audio src="${msg.content}" controls preload="metadata" style="width: 100%; margin-top: 0.5rem;"></audio>` : ''}
                         ${msg.type === 'photo' ? `<img src="${msg.content}" style="width: 100%; border-radius: 0.75rem; margin-top: 0.5rem;">` : ''}
-                        ${msg.type === 'video' ? `<video src="${msg.content}" controls style="width: 100%; border-radius: 0.75rem; margin-top: 0.5rem;"></video>` : ''}
+                        ${msg.type === 'video' ? `<video src="${msg.content}" controls preload="metadata" style="width: 100%; border-radius: 0.75rem; margin-top: 0.5rem;"></video>` : ''}
                     </div>
                 `).join('');
             } catch (error) {
@@ -455,6 +478,26 @@
                 a.click();
             } catch (error) {
                 alert('Erreur de téléchargement: ' + error.message);
+            }
+        }
+
+        async function deleteMessage(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce message ?')) {
+                return;
+            }
+            
+            try {
+                const { error } = await supabase
+                    .from('messages')
+                    .delete()
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                // Recharger les messages
+                loadAdminMessages();
+            } catch (error) {
+                alert('Erreur de suppression: ' + error.message);
             }
         }
     </script>
