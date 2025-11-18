@@ -4,583 +4,418 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Livre d'Or - Sara & Othmane</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Lato', sans-serif; }
-        .font-display { font-family: 'Playfair Display', serif; }
-        .gold-gradient { background: linear-gradient(135deg, #D4AF37 0%, #F4E5C3 50%, #D4AF37 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .bg-elegant { background: linear-gradient(135deg, #FFFFFF 0%, #F5F0E8 40%, #EFE8DC 70%, #E8DCC8 100%); min-height: 100vh; }
-        .shadow-elegant { box-shadow: 0 10px 40px rgba(212, 175, 55, 0.15); }
+        body { font-family: 'Lato', sans-serif; background: linear-gradient(135deg, #FFFFFF 0%, #F5F0E8 40%, #EFE8DC 70%, #E8DCC8 100%); min-height: 100vh; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem; }
+        .gold-text { background: linear-gradient(135deg, #D4AF37 0%, #F4E5C3 50%, #D4AF37 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .card { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 10px 40px rgba(212, 175, 55, 0.15); margin-bottom: 2rem; }
+        .btn { padding: 1rem 2rem; border-radius: 0.75rem; border: none; font-size: 1.125rem; font-weight: 600; cursor: pointer; transition: all 0.3s; font-family: inherit; }
+        .btn:hover { transform: scale(1.05); }
+        .btn:active { transform: scale(0.95); }
+        .btn-primary { background: linear-gradient(135deg, #D4AF37, #F4E5C3, #D4AF37); color: white; }
+        .btn-secondary { background: #E8DCC8; color: #8B7355; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+        .input { width: 100%; padding: 1rem; border: 2px solid #F4E5C3; border-radius: 0.75rem; font-size: 1rem; font-family: inherit; }
+        .input:focus { outline: none; border-color: #D4AF37; }
+        textarea { resize: vertical; min-height: 150px; }
+        .hidden { display: none !important; }
         .loader { border: 4px solid #F4E5C3; border-top: 4px solid #D4AF37; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
-        .text-center { text-align: center; }
-        .flex { display: flex; }
-        .items-center { align-items: center; }
-        .justify-center { justify-content: center; }
-        .justify-between { justify-content: space-between; }
-        .gap-3 { gap: 0.75rem; }
-        .gap-4 { gap: 1rem; }
-        .gap-5 { gap: 1.25rem; }
-        .grid { display: grid; }
-        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
-        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
-        .rounded-xl { border-radius: 0.75rem; }
-        .rounded-2xl { border-radius: 1rem; }
-        .rounded-full { border-radius: 9999px; }
-        .p-4 { padding: 1rem; }
-        .p-5 { padding: 1.25rem; }
-        .p-6 { padding: 1.5rem; }
-        .p-7 { padding: 1.75rem; }
-        .p-8 { padding: 2rem; }
-        .p-10 { padding: 2.5rem; }
-        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-        .py-5 { padding-top: 1.25rem; padding-bottom: 1.25rem; }
-        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-        .px-10 { padding-left: 2.5rem; padding-right: 2.5rem; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .mb-3 { margin-bottom: 0.75rem; }
-        .mb-4 { margin-bottom: 1rem; }
-        .mb-5 { margin-bottom: 1.25rem; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .mb-8 { margin-bottom: 2rem; }
-        .mb-10 { margin-bottom: 2.5rem; }
-        .w-full { width: 100%; }
-        .max-w-md { max-width: 28rem; }
-        .max-w-4xl { max-width: 56rem; }
-        .bg-white { background-color: white; }
-        .border-2 { border-width: 2px; border-style: solid; }
-        .text-lg { font-size: 1.125rem; }
-        .text-xl { font-size: 1.25rem; }
-        .text-2xl { font-size: 1.5rem; }
-        .text-3xl { font-size: 1.875rem; }
-        .text-4xl { font-size: 2.25rem; }
-        .text-5xl { font-size: 3rem; }
-        .text-6xl { font-size: 3.75rem; }
-        .text-7xl { font-size: 4.5rem; }
-        .text-sm { font-size: 0.875rem; }
-        .font-semibold { font-weight: 600; }
-        .font-bold { font-weight: 700; }
-        .text-red-500 { color: #ef4444; }
-        button { cursor: pointer; border: none; font-family: inherit; transition: all 0.3s; }
-        button:hover { transform: scale(1.02); }
-        button:active { transform: scale(0.98); }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        input, textarea { font-family: inherit; outline: none; }
-        input:focus, textarea:focus { border-color: #D4AF37 !important; }
-        .fixed { position: fixed; }
-        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
-        .z-50 { z-index: 50; }
-        .transform { transform: translateX(-50%); }
-        .top-8 { top: 2rem; }
-        .left-1-2 { left: 50%; }
-        @media (min-width: 768px) {
-            .md\\:text-7xl { font-size: 4.5rem; }
-            .md\\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
-        }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .message-card { border-left: 5px solid #D4AF37; margin-bottom: 1rem; }
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; background: #F4E5C3; color: #8B7355; border-radius: 999px; font-size: 0.875rem; margin-bottom: 0.5rem; }
     </style>
 </head>
 <body>
-    <div id="root"></div>
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-        
+    <div class="container">
+        <!-- En-tête -->
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <p style="color: #8B7355; font-size: 1.125rem; margin-bottom: 1rem;">Bienvenue au mariage de</p>
+            <h1 class="gold-text" style="font-family: 'Playfair Display', serif; font-size: 4rem; font-weight: 700; margin-bottom: 1rem;">Sara & Othmane</h1>
+            <p style="color: #A89379; font-size: 1.5rem; font-family: 'Playfair Display', serif;">06 Décembre 2025</p>
+        </div>
+
+        <!-- Message de bienvenue -->
+        <div class="card" style="text-align: center;">
+            <p style="color: #8B7355; font-size: 1.25rem; margin-bottom: 1rem; font-family: 'Playfair Display', serif;">🎉 Bienvenue sur notre Livre d'Or en ligne !</p>
+            <p style="color: #6B5744; font-size: 1.125rem; margin-bottom: 1rem; line-height: 1.7;">Laissez-nous un message : 💌 Écrit, 🎤 Audio, 📸 Photo ou 🎥 Vidéo</p>
+            <p style="color: #A89379; font-size: 1.125rem; font-style: italic; font-family: 'Playfair Display', serif;">Merci de tout cœur pour votre présence ✨</p>
+        </div>
+
+        <!-- Notification succès -->
+        <div id="successNotif" class="card hidden" style="position: fixed; top: 2rem; left: 50%; transform: translateX(-50%); z-index: 1001; min-width: 300px; text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+            <h3 class="gold-text" style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; font-family: 'Playfair Display', serif;">Merci beaucoup !</h3>
+            <p style="color: #8B7355;">Votre message a été enregistré</p>
+        </div>
+
+        <!-- Overlay chargement -->
+        <div id="loadingOverlay" class="overlay hidden">
+            <div class="card" style="text-align: center; padding: 2rem;">
+                <div class="loader" style="margin-bottom: 1rem;"></div>
+                <p style="color: #8B7355; font-size: 1.25rem;" id="loadingText">Envoi en cours...</p>
+            </div>
+        </div>
+
+        <!-- Boutons de choix -->
+        <div id="choiceButtons" class="grid">
+            <div class="card" style="text-align: center; cursor: pointer; border: 2px solid #F4E5C3;" onclick="showForm('text')">
+                <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">✍️</div>
+                <div style="color: #8B7355; font-size: 1.25rem; font-weight: 600;">Message</div>
+                <div style="color: #A89379;">Écrit</div>
+            </div>
+            <div class="card" style="text-align: center; cursor: pointer; border: 2px solid #F4E5C3;" onclick="showForm('audio')">
+                <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🎤</div>
+                <div style="color: #8B7355; font-size: 1.25rem; font-weight: 600;">Message</div>
+                <div style="color: #A89379;">Vocal</div>
+            </div>
+            <div class="card" style="text-align: center; cursor: pointer; border: 2px solid #F4E5C3;" onclick="showForm('photo')">
+                <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📸</div>
+                <div style="color: #8B7355; font-size: 1.25rem; font-weight: 600;">Photo</div>
+                <div style="color: #A89379;">Selfie</div>
+            </div>
+            <div class="card" style="text-align: center; cursor: pointer; border: 2px solid #F4E5C3;" onclick="showForm('video')">
+                <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🎥</div>
+                <div style="color: #8B7355; font-size: 1.25rem; font-weight: 600;">Vidéo</div>
+                <div style="color: #A89379;">1 min max</div>
+            </div>
+        </div>
+
+        <!-- Formulaire -->
+        <div id="formContainer" class="card hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 id="formTitle" style="color: #8B7355; font-size: 1.5rem; font-family: 'Playfair Display', serif;"></h3>
+                <button onclick="hideForm()" style="background: none; border: none; font-size: 1.5rem; color: #A89379; cursor: pointer;">✕</button>
+            </div>
+            <input type="text" id="guestName" class="input" placeholder="Votre prénom" style="margin-bottom: 1.25rem;">
+            <div id="formContent"></div>
+        </div>
+
+        <!-- Admin Login -->
+        <div id="adminLogin" class="card hidden" style="max-width: 400px; margin: 5rem auto;">
+            <h2 class="gold-text" style="text-align: center; font-size: 2rem; margin-bottom: 1.5rem; font-family: 'Playfair Display', serif;">Espace Admin</h2>
+            <input type="password" id="adminPassword" class="input" placeholder="Mot de passe" style="margin-bottom: 1rem;">
+            <p id="adminError" style="color: red; font-size: 0.875rem; margin-bottom: 1rem; text-align: center;" class="hidden"></p>
+            <button onclick="adminLogin()" class="btn btn-primary" style="width: 100%;">Se connecter</button>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="hidden">
+            <h1 class="gold-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 2rem; font-family: 'Playfair Display', serif;">Admin - Sara & Othmane</h1>
+            <div class="card" style="text-align: center; margin-bottom: 2rem;">
+                <div class="gold-text" style="font-size: 3rem; font-weight: 700;" id="adminCount">0</div>
+                <div style="color: #8B7355; font-size: 1.125rem;">Messages reçus</div>
+            </div>
+            <button onclick="downloadMessages()" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">📥 Télécharger tous les messages</button>
+            <button onclick="loadAdminMessages()" class="btn btn-secondary" style="width: 100%; margin-bottom: 2rem;">🔄 Actualiser</button>
+            <div id="adminMessages"></div>
+        </div>
+    </div>
+
+    <script>
         const CLOUDINARY_CLOUD_NAME = 'dukizthqt';
         const CLOUDINARY_UPLOAD_PRESET = 'wedding_guestbook';
         const ADMIN_PASSWORD = 'Sara18121703';
-        const STORAGE_KEY = 'wedding-messages-v2';
+        const STORAGE_KEY = 'wedding-messages-v3';
+        
+        let currentType = '';
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let stream = null;
+        let recordingInterval = null;
+        let recordingTime = 0;
 
-        function App() {
-            const [isAdmin, setIsAdmin] = useState(false);
-
-            useEffect(() => {
-                const params = new URLSearchParams(window.location.search);
-                setIsAdmin(params.get('admin') === 'true');
-            }, []);
-
-            return isAdmin ? React.createElement(AdminPage) : React.createElement(GuestPage);
+        // Vérifier si admin
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('admin') === 'true') {
+            document.getElementById('choiceButtons').classList.add('hidden');
+            document.querySelector('.card').classList.add('hidden');
+            document.getElementById('adminLogin').classList.remove('hidden');
         }
 
-        function AdminPage() {
-            const [authenticated, setAuthenticated] = useState(false);
-            const [password, setPassword] = useState('');
-            const [messages, setMessages] = useState([]);
-            const [error, setError] = useState('');
-
-            useEffect(() => {
-                if (authenticated) loadMessages();
-            }, [authenticated]);
-
-            const loadMessages = () => {
-                try {
-                    const data = localStorage.getItem(STORAGE_KEY);
-                    setMessages(data ? JSON.parse(data) : []);
-                } catch (e) {
-                    console.error(e);
-                }
+        function showForm(type) {
+            currentType = type;
+            document.getElementById('choiceButtons').classList.add('hidden');
+            document.getElementById('formContainer').classList.remove('hidden');
+            
+            const titles = {
+                text: '✍️ Votre message',
+                audio: '🎤 Message vocal',
+                photo: '📸 Prendre une photo',
+                video: '🎥 Enregistrer une vidéo'
             };
-
-            const handleLogin = () => {
-                if (password === ADMIN_PASSWORD) {
-                    setAuthenticated(true);
-                    setError('');
+            document.getElementById('formTitle').textContent = titles[type];
+            
+            const formContent = document.getElementById('formContent');
+            if (type === 'text') {
+                formContent.innerHTML = `
+                    <textarea id="messageText" class="input" placeholder="Écrivez votre message aux mariés... 💕" style="margin-bottom: 1.25rem;"></textarea>
+                    <button onclick="submitMessage()" class="btn btn-primary" style="width: 100%;">Envoyer</button>
+                `;
+            } else {
+                formContent.innerHTML = `
+                    <div id="mediaContent" style="text-align: center;"></div>
+                `;
+                if (type === 'photo') {
+                    showCameraButton();
                 } else {
-                    setError('Mot de passe incorrect');
+                    showRecordButton();
                 }
-            };
-
-            const downloadData = () => {
-                const json = JSON.stringify({ messages, total: messages.length }, null, 2);
-                const blob = new Blob([json], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `livre-or-${Date.now()}.json`;
-                a.click();
-            };
-
-            if (!authenticated) {
-                return (
-                    <div className="bg-elegant flex items-center justify-center" style={{minHeight: '100vh'}}>
-                        <div className="bg-white rounded-2xl p-10 max-w-md w-full shadow-elegant">
-                            <h2 className="text-3xl font-display font-bold gold-gradient mb-6 text-center">Espace Admin</h2>
-                            <input
-                                type="password"
-                                placeholder="Mot de passe"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                                className="w-full p-4 border-2 rounded-xl mb-4 text-lg"
-                                style={{borderColor: '#F4E5C3'}}
-                            />
-                            {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
-                            <button
-                                onClick={handleLogin}
-                                className="w-full py-4 rounded-xl font-semibold text-xl"
-                                style={{background: 'linear-gradient(135deg, #D4AF37, #F4E5C3, #D4AF37)', color: 'white'}}
-                            >
-                                Se connecter
-                            </button>
-                        </div>
-                    </div>
-                );
             }
-
-            return (
-                <div className="bg-elegant">
-                    <div className="container">
-                        <h1 className="text-4xl font-display font-bold gold-gradient mb-8 text-center">Admin - Sara & Othmane</h1>
-                        
-                        <div className="bg-white rounded-2xl p-6 mb-6 shadow-elegant text-center">
-                            <div className="text-5xl font-bold gold-gradient mb-2">{messages.length}</div>
-                            <div className="text-lg" style={{color: '#8B7355'}}>Messages reçus</div>
-                        </div>
-
-                        <button
-                            onClick={downloadData}
-                            className="w-full py-4 rounded-xl font-semibold text-lg mb-6"
-                            style={{background: 'linear-gradient(135deg, #D4AF37, #F4E5C3, #D4AF37)', color: 'white'}}
-                        >
-                            📥 Télécharger tous les messages
-                        </button>
-
-                        <button
-                            onClick={loadMessages}
-                            className="w-full py-3 rounded-xl font-semibold border-2 mb-6"
-                            style={{borderColor: '#F4E5C3', color: '#8B7355'}}
-                        >
-                            🔄 Actualiser
-                        </button>
-
-                        <div>
-                            {messages.length === 0 ? (
-                                <div className="text-center bg-white rounded-2xl" style={{padding: '3rem'}}>
-                                    <p className="text-lg" style={{color: '#8B7355'}}>Aucun message</p>
-                                </div>
-                            ) : (
-                                messages.map(msg => (
-                                    <div key={msg.id} className="bg-white rounded-2xl p-5 mb-4 shadow-elegant" style={{borderLeft: '5px solid #D4AF37'}}>
-                                        <div className="font-semibold text-lg" style={{color: '#8B7355'}}>{msg.name}</div>
-                                        <div className="text-sm mb-2" style={{color: '#A89379'}}>
-                                            {new Date(msg.timestamp).toLocaleString('fr-FR')}
-                                        </div>
-                                        <div style={{display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: '9999px', fontSize: '0.875rem', background: '#F4E5C3', color: '#8B7355', marginBottom: '0.75rem'}}>
-                                            {msg.type === 'text' && '📝 Texte'}
-                                            {msg.type === 'audio' && '🎤 Audio'}
-                                            {msg.type === 'photo' && '📸 Photo'}
-                                            {msg.type === 'video' && '🎥 Vidéo'}
-                                        </div>
-                                        {msg.type === 'text' && <p className="text-lg" style={{color: '#6B5744', whiteSpace: 'pre-wrap'}}>{msg.content}</p>}
-                                        {msg.type === 'audio' && <audio src={msg.content} controls className="w-full" />}
-                                        {msg.type === 'photo' && <img src={msg.content} className="rounded-xl" style={{maxWidth: '100%'}} alt="Photo" />}
-                                        {msg.type === 'video' && <video src={msg.content} controls className="rounded-xl" style={{maxWidth: '100%'}} />}
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                </div>
-            );
         }
 
-        function GuestPage() {
-            const [showForm, setShowForm] = useState(false);
-            const [type, setType] = useState(null);
-            const [name, setName] = useState('');
-            const [text, setText] = useState('');
-            const [uploading, setUploading] = useState(false);
-            const [success, setSuccess] = useState(false);
+        function hideForm() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            if (recordingInterval) clearInterval(recordingInterval);
+            document.getElementById('formContainer').classList.add('hidden');
+            document.getElementById('choiceButtons').classList.remove('hidden');
+            recordedChunks = [];
+            recordingTime = 0;
+        }
 
-            const uploadToCloudinary = async (file) => {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-                
-                const resourceType = type === 'video' || type === 'audio' ? 'video' : 'image';
-                const response = await fetch(
-                    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`,
-                    { method: 'POST', body: formData }
-                );
-                
-                if (!response.ok) throw new Error('Upload failed');
-                const data = await response.json();
-                return data.secure_url;
-            };
+        function showCameraButton() {
+            document.getElementById('mediaContent').innerHTML = `
+                <button onclick="startCamera()" class="btn btn-primary">Ouvrir la caméra</button>
+            `;
+        }
 
-            const handleSubmit = async (content) => {
-                if (!name.trim()) {
-                    alert('Veuillez entrer votre nom');
-                    return;
+        function showRecordButton() {
+            document.getElementById('mediaContent').innerHTML = `
+                <button onclick="startRecording()" class="btn btn-primary">Commencer l'enregistrement</button>
+            `;
+        }
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('mediaContent').innerHTML = `
+                    <video id="videoPreview" autoplay muted playsinline style="width: 100%; border-radius: 0.75rem; margin-bottom: 1rem;"></video>
+                    <button onclick="capturePhoto()" class="btn btn-primary">📸 Prendre la photo</button>
+                `;
+                document.getElementById('videoPreview').srcObject = stream;
+            } catch (error) {
+                alert('Erreur caméra: ' + error.message);
+            }
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('videoPreview');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            canvas.toBlob(blob => {
+                stream.getTracks().forEach(track => track.stop());
+                showPreview(URL.createObjectURL(blob), blob);
+            }, 'image/jpeg', 0.9);
+        }
+
+        async function startRecording() {
+            try {
+                const constraints = {
+                    audio: true,
+                    video: currentType === 'video'
+                };
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                mediaRecorder = new MediaRecorder(stream);
+                recordedChunks = [];
+                
+                mediaRecorder.ondataavailable = e => {
+                    if (e.data.size > 0) recordedChunks.push(e.data);
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { 
+                        type: currentType === 'video' ? 'video/webm' : 'audio/webm' 
+                    });
+                    stream.getTracks().forEach(track => track.stop());
+                    showPreview(URL.createObjectURL(blob), blob);
+                };
+                
+                mediaRecorder.start();
+                recordingTime = 0;
+                
+                let html = '';
+                if (currentType === 'video') {
+                    html += '<video id="videoPreview" autoplay muted playsinline style="width: 100%; border-radius: 0.75rem; margin-bottom: 1rem;"></video>';
+                    document.getElementById('mediaContent').innerHTML = html;
+                    document.getElementById('videoPreview').srcObject = stream;
+                } else {
+                    document.getElementById('mediaContent').innerHTML = '<div style="font-size: 4rem; margin-bottom: 1rem;">🎙️</div>';
                 }
+                
+                document.getElementById('mediaContent').innerHTML += `
+                    <div id="timer" style="font-size: 2rem; font-weight: 700; color: #D4AF37; margin-bottom: 1rem;">0:00 / 1:00</div>
+                    <button onclick="stopRecording()" class="btn" style="background: #ef4444; color: white;">⏹️ Arrêter</button>
+                `;
+                
+                recordingInterval = setInterval(() => {
+                    recordingTime++;
+                    const mins = Math.floor(recordingTime / 60);
+                    const secs = recordingTime % 60;
+                    document.getElementById('timer').textContent = `${mins}:${secs.toString().padStart(2, '0')} / 1:00`;
+                    
+                    if (recordingTime >= 60) {
+                        stopRecording();
+                    }
+                }, 1000);
+            } catch (error) {
+                alert('Erreur: ' + error.message);
+            }
+        }
 
-                if (type === 'text' && !text.trim()) {
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            if (recordingInterval) {
+                clearInterval(recordingInterval);
+                recordingInterval = null;
+            }
+        }
+
+        function showPreview(url, blob) {
+            let html = '';
+            if (currentType === 'audio') {
+                html = `<audio src="${url}" controls style="width: 100%; margin-bottom: 1rem;"></audio>`;
+            } else if (currentType === 'photo') {
+                html = `<img src="${url}" style="width: 100%; border-radius: 0.75rem; margin-bottom: 1rem;">`;
+            } else if (currentType === 'video') {
+                html = `<video src="${url}" controls style="width: 100%; border-radius: 0.75rem; margin-bottom: 1rem;"></video>`;
+            }
+            
+            html += `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <button onclick="showForm('${currentType}')" class="btn btn-secondary">Reprendre</button>
+                    <button onclick="submitMessage('${url}', ${blob ? 'true' : 'false'})" class="btn btn-primary">Envoyer</button>
+                </div>
+            `;
+            
+            document.getElementById('mediaContent').innerHTML = html;
+            
+            // Stocker le blob temporairement
+            window.currentBlob = blob;
+        }
+
+        async function submitMessage(mediaUrl, hasBlob) {
+            const name = document.getElementById('guestName').value.trim();
+            if (!name) {
+                alert('Veuillez entrer votre nom');
+                return;
+            }
+            
+            let content = '';
+            
+            if (currentType === 'text') {
+                content = document.getElementById('messageText').value.trim();
+                if (!content) {
                     alert('Veuillez écrire un message');
                     return;
                 }
-
-                setUploading(true);
-
+            } else {
+                document.getElementById('loadingOverlay').classList.remove('hidden');
+                document.getElementById('loadingText').textContent = 'Upload en cours...';
+                
                 try {
-                    let finalContent = type === 'text' ? text : content;
+                    const blob = window.currentBlob;
+                    const formData = new FormData();
+                    formData.append('file', blob);
+                    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
                     
-                    if (type !== 'text' && content instanceof Blob) {
-                        finalContent = await uploadToCloudinary(content);
-                    }
-
-                    const message = {
-                        id: Date.now(),
-                        type,
-                        name,
-                        content: finalContent,
-                        timestamp: new Date().toISOString()
-                    };
-
-                    const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify([...existing, message]));
-
-                    setUploading(false);
-                    setSuccess(true);
-                    setShowForm(false);
-                    setName('');
-                    setText('');
+                    const resourceType = (currentType === 'video' || currentType === 'audio') ? 'video' : 'image';
+                    const response = await fetch(
+                        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`,
+                        { method: 'POST', body: formData }
+                    );
                     
-                    setTimeout(() => setSuccess(false), 3000);
+                    if (!response.ok) throw new Error('Upload failed');
+                    const data = await response.json();
+                    content = data.secure_url;
                 } catch (error) {
-                    setUploading(false);
-                    alert('Erreur: ' + error.message);
+                    document.getElementById('loadingOverlay').classList.add('hidden');
+                    alert('Erreur upload: ' + error.message);
+                    return;
                 }
+            }
+            
+            const message = {
+                id: Date.now(),
+                type: currentType,
+                name,
+                content,
+                timestamp: new Date().toISOString()
             };
-
-            return (
-                <div className="bg-elegant">
-                    <div className="container">
-                        <div className="text-center mb-10">
-                            <p className="text-lg mb-3" style={{color: '#8B7355'}}>Bienvenue au mariage de</p>
-                            <h1 className="text-6xl font-display font-bold gold-gradient mb-3" style={{letterSpacing: '2px'}}>Sara & Othmane</h1>
-                            <p className="text-2xl font-display" style={{color: '#A89379'}}>06 Décembre 2025</p>
-                        </div>
-
-                        <div className="bg-white rounded-2xl p-8 mb-8 shadow-elegant">
-                            <p className="text-xl font-display mb-4" style={{color: '#8B7355', lineHeight: '1.8'}}>
-                                🎉 Bienvenue sur notre Livre d'Or en ligne !
-                            </p>
-                            <p className="text-lg mb-4" style={{color: '#6B5744', lineHeight: '1.8'}}>
-                                Laissez-nous un message : 💌 Écrit, 🎤 Audio, 📸 Photo ou 🎥 Vidéo
-                            </p>
-                            <p className="text-lg font-display" style={{color: '#A89379', fontStyle: 'italic'}}>
-                                Merci de tout cœur pour votre présence ✨
-                            </p>
-                        </div>
-
-                        {success && (
-                            <div className="fixed z-50" style={{top: '2rem', left: '50%', transform: 'translateX(-50%)'}}>
-                                <div className="bg-white rounded-2xl p-6 shadow-elegant">
-                                    <div className="text-center">
-                                        <div style={{fontSize: '3rem', marginBottom: '0.75rem'}}>✅</div>
-                                        <h3 className="text-2xl font-display font-bold gold-gradient mb-2">Merci beaucoup !</h3>
-                                        <p style={{color: '#8B7355'}}>Votre message a été enregistré</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {uploading && (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
-                                <div className="bg-white rounded-2xl p-8 text-center">
-                                    <div className="loader mb-4"></div>
-                                    <p className="text-xl" style={{color: '#8B7355'}}>Envoi en cours...</p>
-                                </div>
-                            </div>
-                        )}
-
-                        {!showForm ? (
-                            <div className="grid grid-cols-2 gap-5">
-                                <button
-                                    onClick={() => { setShowForm(true); setType('text'); }}
-                                    className="bg-white rounded-2xl p-8 shadow-elegant border-2"
-                                    style={{borderColor: '#F4E5C3'}}
-                                >
-                                    <div style={{fontSize: '2.5rem', marginBottom: '0.75rem'}}>✍️</div>
-                                    <div className="text-xl font-semibold" style={{color: '#8B7355'}}>Message</div>
-                                    <div style={{color: '#A89379'}}>Écrit</div>
-                                </button>
-                                
-                                <button
-                                    onClick={() => { setShowForm(true); setType('audio'); }}
-                                    className="bg-white rounded-2xl p-8 shadow-elegant border-2"
-                                    style={{borderColor: '#F4E5C3'}}
-                                >
-                                    <div style={{fontSize: '2.5rem', marginBottom: '0.75rem'}}>🎤</div>
-                                    <div className="text-xl font-semibold" style={{color: '#8B7355'}}>Message</div>
-                                    <div style={{color: '#A89379'}}>Vocal</div>
-                                </button>
-                                
-                                <button
-                                    onClick={() => { setShowForm(true); setType('photo'); }}
-                                    className="bg-white rounded-2xl p-8 shadow-elegant border-2"
-                                    style={{borderColor: '#F4E5C3'}}
-                                >
-                                    <div style={{fontSize: '2.5rem', marginBottom: '0.75rem'}}>📸</div>
-                                    <div className="text-xl font-semibold" style={{color: '#8B7355'}}>Photo</div>
-                                    <div style={{color: '#A89379'}}>Selfie</div>
-                                </button>
-                                
-                                <button
-                                    onClick={() => { setShowForm(true); setType('video'); }}
-                                    className="bg-white rounded-2xl p-8 shadow-elegant border-2"
-                                    style={{borderColor: '#F4E5C3'}}
-                                >
-                                    <div style={{fontSize: '2.5rem', marginBottom: '0.75rem'}}>🎥</div>
-                                    <div className="text-xl font-semibold" style={{color: '#8B7355'}}>Vidéo</div>
-                                    <div style={{color: '#A89379'}}>1 min</div>
-                                </button>
-                            </div>
-                        ) : (
-                            React.createElement(FormComponent, {
-                                type,
-                                name,
-                                setName,
-                                text,
-                                setText,
-                                onSubmit: handleSubmit,
-                                onCancel: () => setShowForm(false),
-                                disabled: uploading
-                            })
-                        )}
-                    </div>
-                </div>
-            );
+            
+            const messages = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            messages.push(message);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+            
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            hideForm();
+            
+            document.getElementById('successNotif').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('successNotif').classList.add('hidden');
+            }, 3000);
         }
 
-        function FormComponent({ type, name, setName, text, setText, onSubmit, onCancel, disabled }) {
-            const [recording, setRecording] = useState(false);
-            const [time, setTime] = useState(0);
-            const [media, setMedia] = useState(null);
-            const [mediaRecorder, setMediaRecorder] = useState(null);
-            const [stream, setStream] = useState(null);
-            const videoRef = useRef(null);
-            const intervalRef = useRef(null);
+        function adminLogin() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById('adminLogin').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                loadAdminMessages();
+            } else {
+                document.getElementById('adminError').textContent = 'Mot de passe incorrect';
+                document.getElementById('adminError').classList.remove('hidden');
+            }
+        }
 
-            useEffect(() => {
-                return () => {
-                    if (stream) stream.getTracks().forEach(t => t.stop());
-                    if (intervalRef.current) clearInterval(intervalRef.current);
-                };
-            }, [stream]);
-
-            const startCapture = async () => {
-                try {
-                    const s = await navigator.mediaDevices.getUserMedia({
-                        audio: type === 'audio' || type === 'video',
-                        video: type === 'photo' || type === 'video'
-                    });
-                    
-                    setStream(s);
-                    
-                    if (videoRef.current && (type === 'photo' || type === 'video')) {
-                        videoRef.current.srcObject = s;
-                        videoRef.current.play();
-                    }
-
-                    if (type === 'audio' || type === 'video') {
-                        const recorder = new MediaRecorder(s);
-                        const chunks = [];
-                        
-                        recorder.ondataavailable = (e) => chunks.push(e.data);
-                        recorder.onstop = () => {
-                            const blob = new Blob(chunks, { type: type === 'video' ? 'video/webm' : 'audio/webm' });
-                            setMedia(blob);
-                            s.getTracks().forEach(t => t.stop());
-                        };
-                        
-                        recorder.start();
-                        setMediaRecorder(recorder);
-                        setRecording(true);
-                        
-                        intervalRef.current = setInterval(() => {
-                            setTime(t => {
-                                if (t >= 60) {
-                                    recorder.stop();
-                                    setRecording(false);
-                                    clearInterval(intervalRef.current);
-                                    return 60;
-                                }
-                                return t + 1;
-                            });
-                        }, 1000);
-                    }
-                } catch (error) {
-                    alert('Erreur caméra: ' + error.message);
-                }
-            };
-
-            const stopCapture = () => {
-                if (mediaRecorder) mediaRecorder.stop();
-                setRecording(false);
-                if (intervalRef.current) clearInterval(intervalRef.current);
-            };
-
-            const capturePhoto = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = videoRef.current.videoWidth;
-                canvas.height = videoRef.current.videoHeight;
-                canvas.getContext('2d').drawImage(videoRef.current, 0, 0);
-                canvas.toBlob(blob => {
-                    setMedia(blob);
-                    stream.getTracks().forEach(t => t.stop());
-                }, 'image/jpeg', 0.9);
-            };
-
-            return (
-                <div className="bg-white rounded-2xl p-7 shadow-elegant">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-2xl font-display font-semibold" style={{color: '#8B7355'}}>
-                            {type === 'text' && '✍️ Votre message'}
-                            {type === 'audio' && '🎤 Message vocal'}
-                            {type === 'photo' && '📸 Photo'}
-                            {type === 'video' && '🎥 Vidéo'}
-                        </h3>
-                        <button onClick={onCancel} disabled={disabled} style={{fontSize: '1.5rem', color: '#A89379'}}>✕</button>
+        function loadAdminMessages() {
+            const messages = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            document.getElementById('adminCount').textContent = messages.length;
+            
+            const container = document.getElementById('adminMessages');
+            if (messages.length === 0) {
+                container.innerHTML = '<div class="card" style="text-align: center; padding: 3rem;"><p style="color: #8B7355; font-size: 1.125rem;">Aucun message</p></div>';
+                return;
+            }
+            
+            container.innerHTML = messages.reverse().map(msg => `
+                <div class="card message-card">
+                    <div style="font-weight: 600; font-size: 1.125rem; color: #8B7355; margin-bottom: 0.5rem;">${msg.name}</div>
+                    <div style="font-size: 0.875rem; color: #A89379; margin-bottom: 0.75rem;">${new Date(msg.timestamp).toLocaleString('fr-FR')}</div>
+                    <div class="badge">
+                        ${msg.type === 'text' ? '📝 Texte' : ''}
+                        ${msg.type === 'audio' ? '🎤 Audio' : ''}
+                        ${msg.type === 'photo' ? '📸 Photo' : ''}
+                        ${msg.type === 'video' ? '🎥 Vidéo' : ''}
                     </div>
+                    ${msg.type === 'text' ? `<p style="color: #6B5744; font-size: 1.125rem; line-height: 1.7; white-space: pre-wrap;">${msg.content}</p>` : ''}
+                    ${msg.type === 'audio' ? `<audio src="${msg.content}" controls style="width: 100%;"></audio>` : ''}
+                    ${msg.type === 'photo' ? `<img src="${msg.content}" style="width: 100%; border-radius: 0.75rem;">` : ''}
+                    ${msg.type === 'video' ? `<video src="${msg.content}" controls style="width: 100%; border-radius: 0.75rem;"></video>` : ''}
+                </div>
+            `).join('');
+        }
 
-                    <input
-                        type="text"
-                        placeholder="Votre prénom"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        disabled={disabled}
-                        className="w-full p-4 border-2 rounded-xl mb-5 text-lg"
-                        style={{borderColor: '#F4E5C3'}}
-                    />
-
-                    {type === 'text' && (
-                        <div>
-                            <textarea
-                                placeholder="Votre message..."
-                                value={text}
-                                onChange={(e) => setText(e.target.value)}
-                                disabled={disabled}
-                                className="w-full p-4 border-2 rounded-xl mb-5 text-lg"
-                                style={{borderColor: '#F4E5C3', height: '10rem'}}
-                            />
-                            <button
-                                onClick={() => onSubmit(null)}
-                                disabled={disabled}
-                                className="w-full py-5 rounded-xl font-semibold text-xl"
-                                style={{background: 'linear-gradient(135deg, #D4AF37, #F4E5C3, #D4AF37)', color: 'white'}}
-                            >
-                                Envoyer
-                            </button>
-                        </div>
-                    )}
-
-                    {(type === 'audio' || type === 'video') && !media && !recording && (
-                        <button
-                            onClick={startCapture}
-                            className="w-full py-5 rounded-xl font-semibold text-xl"
-                            style={{background: 'linear-gradient(135deg, #C19A6B, #E8DCC8)', color: 'white'}}
-                        >
-                            Commencer
-                        </button>
-                    )}
-
-                    {recording && (
-                        <div className="text-center py-8">
-                            {type === 'video' && <video ref={videoRef} autoPlay muted className="w-full rounded-xl mb-4" />}
-                            {type === 'audio' && <div style={{fontSize: '4.5rem', marginBottom: '1rem'}}>🎙️</div>}
-                            <div style={{fontSize: '2.25rem', fontWeight: 'bold', marginBottom: '1rem', color: '#D4AF37'}}>
-                                {Math.floor(time / 60)}:{(time % 60).toString().padStart(2, '0')} / 1:00
-                            </div>
-                            <button
-                                onClick={stopCapture}
-                                className="px-10 py-5 rounded-xl font-semibold text-xl"
-                                style={{background: '#ef4444', color: 'white'}}
-                            >
-                                ⏹️ Arrêter
-                            </button>
-                        </div>
-                    )}
-
-                    {type === 'photo' && !media && !stream && (
-                        <button
-                            onClick={startCapture}
-                            className="w-full py-5 rounded-xl font-semibold text-xl"
-                            style={{background: 'linear-gradient(135deg, #B8956A, #E8DCC8)', color: 'white'}}
-                        >
-                            Ouvrir caméra
-                        </button>
-                    )}
-
-                    {type === 'photo' && stream && !media && (
-                        <div>
-                            <video ref={videoRef} autoPlay muted className="w-full rounded-xl mb-4" />
-                            <button
-                                onClick={capturePhoto}
-                                className="w-full py-5 rounded-xl font-semibold text-xl"
-                                style={{background: 'linear-gradient(135deg, #B8956A, #E8DCC8)', color: 'white'}}
-                            >
-                                📸 Prendre
-                            </button>
-                        </div>
-                    )}
-
-                    {media && !disabled && (
-                        <div>
-                            {type === 'audio' && <audio src={URL.createObjectURL(media)} controls className="w-full mb-4" />}
-                            {type === 'photo' && <img src={URL.createObjectURL(media)} className="w-full rounded-xl mb-4" alt="Photo" />}
-                            {type === 'video' && <video src={URL.createObjectURL(media)} controls className="w-full rounded-xl mb-4" />}
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setMedia(null)}
-                                    className="py-4 rounded-xl font-semibold"
-                                    style={{flex: 1, background: '#E8DCC8', color: '#8B7355'}}
-                                >
-                                    Reprendre
-                                </button>
-                                <button
-                                    onClick={() => onSubmit
+        function downloadMessages() {
+            const messages = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const data = JSON.stringify({ messages, total: messages.length }, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `livre-or-${Date.now()}.json`;
+            a.click();
+        }
+    </script>
+</body>
+</html>
